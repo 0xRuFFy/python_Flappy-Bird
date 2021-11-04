@@ -1,0 +1,28 @@
+{
+    "window" : {
+        "width" : 288,
+        "height" : 512,
+        "fps" : 144
+    },
+
+    "game" : {
+        "basescroll" : 90
+    },
+
+    "bird" : {
+        "xpos" : 40,
+        "flapforce" : 350,
+        "gravity" : 1200
+    },
+
+    "pipe" : {
+        "limit" : 140,
+        "gapY" : 100,
+        "gapX" : 200
+    },
+
+    "scoreboard" : {
+        "x" : 132,
+        "y" : 450
+    }
+}
