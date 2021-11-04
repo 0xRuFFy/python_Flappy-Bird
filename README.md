@@ -9,3 +9,4 @@ This is the Game Flappy Bird which was originally developt by **Dong Nguyen** un
 
 ## Resources
 ### [assets](https://github.com/samuelcust/flappy-bird-assets)
+### [code formater](https://github.com/psf/black)
