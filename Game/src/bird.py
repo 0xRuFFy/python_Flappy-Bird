@@ -86,5 +86,4 @@ class Bird(Sprite):
         """
         self.velocity -= self.jData.birdGravity * dt
         super().update(y=self.y + self.velocity * dt)
-        self.checkForGround()
-        return self.y <= self.assets.base.height
+        return self.checkForGround()
