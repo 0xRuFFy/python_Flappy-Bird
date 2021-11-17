@@ -45,6 +45,7 @@ class Bird(Sprite):
         self.alive = True
         self.velocity = 0
         self.image = Animation.from_image_sequence(self.assets.birds, duration=0.1, loop=True)
+        self.visible = True
         super().update(
             y=((self.jData.height + self.assets.base.height) - self.assets.birds[1].height) // 2
         )

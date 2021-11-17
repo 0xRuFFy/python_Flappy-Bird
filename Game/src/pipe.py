@@ -1,5 +1,7 @@
+from typing import List
 from pyglet.graphics import Batch, OrderedGroup
 from pyglet.sprite import Sprite
+from src.ai.ai_bird import Ai_Bird
 from src.bird import Bird
 from src.data_loader import Assets, JsonData
 from random import randint
@@ -17,10 +19,12 @@ class Pipe:
         x: float,
         assets: Assets,
         jData: JsonData,
-        bird: Bird,
-        index: int,
         batch: Batch,
         group: OrderedGroup,
+        mode: str = "normal",
+        index: int = 0,
+        bird: Bird = None,
+        birds: List[Ai_Bird] = None,
     ) -> None:
         """__init__
         -
@@ -38,7 +42,11 @@ class Pipe:
 
         self.jData = jData
         self.assets = assets
-        self.bird = bird
+        self.normal = mode == "normal"
+        if self.normal:
+            self.bird = bird
+        else:
+            self.birds: List[Ai_Bird] = birds
 
         # * :: Sprites ::
         self.lower = Sprite(img=assets.pipe, x=x, y=self.getY(), batch=batch, group=group)
@@ -64,7 +72,7 @@ class Pipe:
         """
         return randint(-self.jData.pipeLimitY, self.jData.pipeLimitY - self.jData.pipeGapSizeY)
 
-    def update(self, other, scoreBoard: ScoreBoard, dt: float) -> None:
+    def update(self, other, dt: float, scoreBoard: ScoreBoard = None) -> None:
         """update
         -
         Updates the pipe and checks for collison with the bird.
@@ -74,16 +82,35 @@ class Pipe:
             scoreBoard (ScoreBoard): the ScoreBoard
             dt (float): time since the last call
         """
-        if self.bird.alive:
+        if self.normal:
+            if self.bird.alive:
+                self.lower.update(x=self.lower.x - self.jData.baseScroll * dt)
+                self.upper.update(x=self.upper.x - self.jData.baseScroll * dt)
+                if self.positionID == 0:
+                    self.check_for_collision()
+                    if self.bird.x >= self.lower.x + self.assets.pipe.width:
+                        scoreBoard.score += 1
+                        scoreBoard.update()
+                        self.positionID = 1
+                        other.positionID = 0
+                self.wrapAround(other)
+        else:
             self.lower.update(x=self.lower.x - self.jData.baseScroll * dt)
             self.upper.update(x=self.upper.x - self.jData.baseScroll * dt)
             if self.positionID == 0:
                 self.check_for_collision()
-                if self.bird.x >= self.lower.x + self.assets.pipe.width:
-                    scoreBoard.score += 1
-                    scoreBoard.update()
-                    self.positionID = 1
-                    other.positionID = 0
+                for bird in self.birds:
+                    if not bird.alive:
+                        continue
+                    updated = False
+                    if bird.x >= self.lower.x + self.assets.pipe.width:
+                        updated = True
+                        bird.score += 1
+                        bird.bonus = 0
+                        bird.update(dt=dt)
+                    if updated:
+                        self.positionID = 1
+                        other.positionID = 0
             self.wrapAround(other)
 
     def wrapAround(self, other, force: bool = False) -> None:
@@ -107,15 +134,31 @@ class Pipe:
         -
         Checks for collison of the bird and the pipe or the bird and the ground.
         """
-        bottom_check: bool = self.bird.y >= self.lower.y + self.assets.pipe.height
-        left_check: bool = self.bird.x + self.assets.birds[0].width >= self.lower.x
-        right_check: bool = self.bird.x <= self.lower.x + self.assets.pipe.width
-        top_check: bool = (
-            self.bird.y + self.assets.birds[0].height
-            <= self.lower.y + self.jData.pipeGapSizeY + self.assets.pipe.height
-        )
-        if (
-            left_check and right_check and not (top_check and bottom_check)
-        ) or self.bird.checkForGround():
-            self.bird.alive = False
-            self.bird.image = self.assets.birds[1]
+        if self.normal:
+            bottom_check: bool = self.bird.y >= self.lower.y + self.assets.pipe.height
+            left_check: bool = self.bird.x + self.assets.birds[0].width >= self.lower.x
+            right_check: bool = self.bird.x <= self.lower.x + self.assets.pipe.width
+            top_check: bool = (
+                self.bird.y + self.assets.birds[0].height
+                <= self.lower.y + self.jData.pipeGapSizeY + self.assets.pipe.height
+            )
+            if (
+                left_check and right_check and not (top_check and bottom_check)
+            ) or self.bird.checkForGround():
+                self.bird.alive = False
+                self.bird.image = self.assets.birds[1]
+        else:
+
+            for bird in self.birds:
+                bottom_check: bool = bird.y >= self.lower.y + self.assets.pipe.height
+                left_check: bool = bird.x + self.assets.birds[0].width >= self.lower.x
+                right_check: bool = bird.x <= self.lower.x + self.assets.pipe.width
+                top_check: bool = (
+                    bird.y + self.assets.birds[0].height
+                    <= self.lower.y + self.jData.pipeGapSizeY + self.assets.pipe.height
+                )
+                if (
+                    left_check and right_check and not (top_check and bottom_check)
+                ) or bird.checkForGround():
+                    bird.alive = False
+                    bird.image = self.assets.birds[1]

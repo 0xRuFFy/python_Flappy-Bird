@@ -10,3 +10,22 @@ This is the Game Flappy Bird which was originally developt by **Dong Nguyen** un
 ## Resources
 ### [assets](https://github.com/samuelcust/flappy-bird-assets)
 ### [code formater](https://github.com/psf/black)
+
+## How to use
+### Print usage:
+```shell
+> python main.py -h
+```
+
+### To play the game, one of:
+```shell
+> python main.py --play
+> python main.py -p
+> python main.py
+```
+
+### To start as Maschine learing window, one of:
+```shell
+> python main.py --learn
+> python main.py -l
+```

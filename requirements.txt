@@ -1,2 +1,2 @@
-pyglet==1.5
+pyglet==1.5.21
 black==21.10b0

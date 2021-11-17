@@ -1,0 +1,11 @@
+
+Flappy Bird clone in Python using Pyglet
+
+Program call : python main.py [OPTION]
+
+Options:
+    ~ --help  | -h -> print this usage
+    ~ --play  | -p -> start a playable game
+    ~ --learn | -l [FILE] -> start maschine learing process write result to file (optional)
+
+-- Konstantin Opora : https://github.com/0xRuFFy/python_Flappy-Bird --

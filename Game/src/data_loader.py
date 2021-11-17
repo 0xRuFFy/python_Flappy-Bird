@@ -25,6 +25,9 @@ class JsonData:
         scoreBoardX: int = data["scoreboard"]["x"]
         scoreBoardY: int = data["scoreboard"]["y"]
 
+        # * -- AI --
+        ann_struct: List[int] = data["ai"]["layers"]
+
 
 class Assets:
     """Assets

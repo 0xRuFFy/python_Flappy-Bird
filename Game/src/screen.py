@@ -9,6 +9,8 @@ from pyglet.sprite import Sprite
 from src.scoreBoard import ScoreBoard
 from pyglet.shapes import Rectangle
 
+from src.ai.generation import Generation
+
 
 class FlappyWindow(Window):
     """FlappyWindow
@@ -21,7 +23,7 @@ class FlappyWindow(Window):
     jData = JsonData()
     assets = Assets()
 
-    def __init__(self) -> None:
+    def __init__(self, mode: str = "play", gen_size: int = None) -> None:
         """Creates a Flappy Bird Window"""
         # * :: Window Setup ::
         super(FlappyWindow, self).__init__(
@@ -30,6 +32,7 @@ class FlappyWindow(Window):
         self.set_icon(self.assets.icon)
 
         # * :: Windowstate Vars ::
+        self.run_ml = mode == "learn"
         self.running = False
         self.restartable = False
 
@@ -42,33 +45,63 @@ class FlappyWindow(Window):
             self.assets.background, 0, 0, batch=self.gameBatch, group=self.groups[0]
         )
 
-        self.startMessage = Sprite(
-            self.assets.startScreen, x=0, y=0, group=self.groups[5], batch=self.gameBatch
-        )
-        self.startMessage.position = (
-            (self.width - self.startMessage.width) // 2,
-            (self.height - self.startMessage.height) // 2,
-        )
+        if not self.run_ml:
+            self.startMessage = Sprite(
+                self.assets.startScreen, x=0, y=0, group=self.groups[5], batch=self.gameBatch
+            )
+            self.startMessage.position = (
+                (self.width - self.startMessage.width) // 2,
+                (self.height - self.startMessage.height) // 2,
+            )
 
-        self.gameOver_message = Sprite(
-            self.assets.gameOver, 0, 0, group=self.groups[5], batch=self.gameBatch
-        )
-        self.gameOver_message.position = (
-            (self.width - self.gameOver_message.width) // 2,
-            self.height // 3 * 2,
-        )
-        self.gameOver_message.opacity = 0
+            self.gameOver_message = Sprite(
+                self.assets.gameOver, 0, 0, group=self.groups[5], batch=self.gameBatch
+            )
+            self.gameOver_message.position = (
+                (self.width - self.gameOver_message.width) // 2,
+                self.height // 3 * 2,
+            )
+            self.gameOver_message.opacity = 0
 
-        self.grey_screen = Rectangle(
-            0,
-            0,
-            self.width,
-            self.height,
-            color=(0, 0, 0),
-            batch=self.gameBatch,
-            group=self.groups[4],
-        )
-        self.grey_screen.opacity = 0
+            self.grey_screen = Rectangle(
+                0,
+                0,
+                self.width,
+                self.height,
+                color=(0, 0, 0),
+                batch=self.gameBatch,
+                group=self.groups[4],
+            )
+            self.grey_screen.opacity = 0
+
+            self.bird = Bird(self.gameBatch, self.groups[2], self.assets, self.jData)
+
+            self.pipes = [
+                Pipe(
+                    self.width,
+                    self.assets,
+                    self.jData,
+                    self.gameBatch,
+                    self.groups[1],
+                    index=0,
+                    bird=self.bird,
+                ),
+                Pipe(
+                    self.width + self.jData.pipeGapSizeX,
+                    self.assets,
+                    self.jData,
+                    self.gameBatch,
+                    self.groups[1],
+                    index=1,
+                    bird=self.bird,
+                ),
+            ]
+        else:
+            self.gen = Generation(
+                gen_size,
+                (self.gameBatch, self.groups[2], self.assets, self.jData),
+                (self.width, self.assets, self.jData, self.gameBatch, self.groups[1]),
+            )
 
         self.bases = [
             Sprite(
@@ -81,31 +114,8 @@ class FlappyWindow(Window):
             for i in range(2)
         ]
 
-        self.bird = Bird(self.gameBatch, self.groups[2], self.assets, self.jData)
-
         self.scoreBoard = ScoreBoard(self.assets, self.jData, self.gameBatch, self.groups[4])
         self.scoreBoard.visibility(0)
-
-        self.pipes = [
-            Pipe(
-                self.width,
-                self.assets,
-                self.jData,
-                self.bird,
-                0,
-                self.gameBatch,
-                self.groups[1],
-            ),
-            Pipe(
-                self.width + self.jData.pipeGapSizeX,
-                self.assets,
-                self.jData,
-                self.bird,
-                1,
-                self.gameBatch,
-                self.groups[1],
-            ),
-        ]
 
         # * :: schedule_interval for .update ::
         schedule_interval(self.update, self.jData.fps_dt)
@@ -122,19 +132,19 @@ class FlappyWindow(Window):
                 self.width,
                 self.assets,
                 self.jData,
-                self.bird,
-                0,
                 self.gameBatch,
                 self.groups[1],
+                index=0,
+                bird=self.bird,
             ),
             Pipe(
                 self.width + self.jData.pipeGapSizeX,
                 self.assets,
                 self.jData,
-                self.bird,
-                1,
                 self.gameBatch,
                 self.groups[1],
+                index=1,
+                bird=self.bird,
             ),
         ]
         self.bird.reset()
@@ -145,7 +155,7 @@ class FlappyWindow(Window):
         Args:
             dt (float): time delta for smooth gameupdates -> handelt by schedule_interval()
         """
-        if self.bird.alive:
+        if self.run_ml or self.bird.alive:
             self.bases[0].x = self.bases[0].x - self.jData.baseScroll * dt
             self.bases[1].x -= self.jData.baseScroll * dt
 
@@ -162,7 +172,11 @@ class FlappyWindow(Window):
             dt (float): time delta for smooth gameupdates -> handelt by schedule_interval(). Defaults to 0.
         """
         self.baseScroll(dt=dt)
-        if self.running:
+
+        if self.run_ml:
+            # - TODO: implement update function for ai
+            self.gen.update(dt=dt)
+        elif self.running:
             self.restartable = self.bird.update(dt=dt)
 
             if not self.bird.alive:
@@ -170,8 +184,8 @@ class FlappyWindow(Window):
                 self.grey_screen.opacity = 100
                 self.scoreBoard.visibility(0)
 
-            self.pipes[0].update(self.pipes[1], self.scoreBoard, dt=dt)
-            self.pipes[1].update(self.pipes[0], self.scoreBoard, dt=dt)
+            self.pipes[0].update(self.pipes[1], scoreBoard=self.scoreBoard, dt=dt)
+            self.pipes[1].update(self.pipes[0], scoreBoard=self.scoreBoard, dt=dt)
 
     def on_draw(self) -> None:
         """Clear the Window and redraw the batch"""
@@ -184,23 +198,25 @@ class FlappyWindow(Window):
         Args:
             symbol (Literal[32]): Pressed Key in Literal[32]
         """
-        if symbol == key.SPACE:
-            self.bird.flap()
-            if not self.running:
-                self.running = True
-                self.startMessage.opacity = 0
-                self.scoreBoard.visibility(255)
+        if not self.run_ml:
+            if symbol == key.SPACE:
+                self.bird.flap()
+                if not self.running:
+                    self.running = True
+                    self.startMessage.opacity = 0
+                    self.scoreBoard.visibility(255)
 
-        if not self.bird.alive and self.restartable and symbol == key.SPACE:
-            self.newGame()
+            if not self.bird.alive and self.restartable and symbol == key.SPACE:
+                self.newGame()
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if button == mouse.LEFT:
-            self.bird.flap()
-            if not self.running:
-                self.running = True
-                self.startMessage.opacity = 0
-                self.scoreBoard.visibility(255)
+        if not self.run_ml:
+            if button == mouse.LEFT:
+                self.bird.flap()
+                if not self.running:
+                    self.running = True
+                    self.startMessage.opacity = 0
+                    self.scoreBoard.visibility(255)
 
-        if not self.bird.alive and self.restartable and button == mouse.LEFT:
-            self.newGame()
+            if not self.bird.alive and self.restartable and button == mouse.LEFT:
+                self.newGame()
