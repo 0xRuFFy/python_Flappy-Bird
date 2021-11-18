@@ -69,16 +69,8 @@ class Generation:
                 bird.get_fitnes(pipe=self.get_next_pipe())
 
         if d_count == len(self.birds):
-            self.gen += 1
-            self.info[0].updateValue(self.gen)
             self.create_next_gen()
 
-            del self.pipes
-            self.pipes: List[Pipe] = [
-                Pipe(*(self.pipe_setup), index=0, birds=self.birds, mode="learn"),
-                Pipe(*(self.pipe_setup), index=1, birds=self.birds, mode="learn"),
-            ]
-            self.pipes[1].wrapAround(self.pipes[0], force=True)
 
         self.pipes[0].update(self.pipes[1], dt=dt)
         self.pipes[1].update(self.pipes[0], dt=dt)
@@ -108,6 +100,8 @@ class Generation:
         return self.birds[best_id].get_gens()
 
     def create_next_gen(self) -> None:
+        self.gen += 1
+        self.info[0].updateValue(self.gen)
         if self.scoreBoard.score > self.maxScore:
             self.maxScore = self.scoreBoard.score
             self.info[1].updateValue(self.maxScore)
@@ -118,6 +112,13 @@ class Generation:
         self.birds[0]._reset(anc, copy=True)
         for bird in self.birds[1:]:
             bird._reset(anc)
+            
+        del self.pipes
+        self.pipes: List[Pipe] = [
+            Pipe(*(self.pipe_setup), index=0, birds=self.birds, mode="learn"),
+            Pipe(*(self.pipe_setup), index=1, birds=self.birds, mode="learn"),
+        ]
+        self.pipes[1].wrapAround(self.pipes[0], force=True)
 
     def get_next_pipe(self) -> Pipe:
         return self.pipes[0] if self.pipes[0].positionID == 0 else self.pipes[1]

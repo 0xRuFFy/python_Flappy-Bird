@@ -212,6 +212,9 @@ class FlappyWindow(Window):
 
             if not self.bird.alive and self.restartable and symbol == key.SPACE:
                 self.newGame()
+        else:
+            if symbol == key.P:
+                self.gen.create_next_gen()
 
     def on_mouse_press(self, x, y, button, modifiers):
         if not self.run_ml:
