@@ -10,13 +10,17 @@ class Ann:
     def __init__(self, struct: List[int]) -> None:
         self.layers: List[List[float]] = [[0 for _ in range(i)] for i in struct]
         self.connections: List[List[float]] = self.create_connections(init=True)
+        self.bias: int = 1
 
     def create_connections(
         self, init: bool = False, ancestor: List[float] = None, copy: bool = False
     ) -> List[List[float]]:
         if init:
             return [
-                [self.get_rand_weight() for _ in range(len(self.layers[i]) * len(layer))]
+                [
+                    self.get_rand_weight(mr=0.5)
+                    for _ in range((len(self.layers[i]) + 1) * len(layer))
+                ]
                 for i, layer in enumerate(self.layers[1:])
             ]
         elif ancestor != None:
@@ -44,6 +48,8 @@ class Ann:
                         self.layers[x - 1][j]
                         * self.connections[x - 1][j + i * len(self.layers[x - 1])]
                     )
+                # add bias (last weights in self.connections)
+                self.layers[x][i] += self.bias * self.connections[x - 1][-i]
                 #  apply sigma funktion if not the output layer
                 if x != len(self.layers) - 1:
                     self.layers[x][i] = self.sigma(self.layers[x][i])
@@ -54,8 +60,8 @@ class Ann:
         for i, node in enumerate(in_layer):
             self.layers[0][i] = node / 1000
 
-    def get_rand_weight(self, else_value: float = 0) -> float:
-        if random() <= self.m_rate:
+    def get_rand_weight(self, else_value: float = 0, mr: float = None) -> float:
+        if random() <= (self.m_rate if mr is None else mr):
             return uniform(-1, 1)
         return else_value
 
