@@ -101,6 +101,10 @@ class FlappyWindow(Window):
                 gen_size,
                 (self.gameBatch, self.groups[2], self.assets, self.jData),
                 (self.width, self.assets, self.jData, self.gameBatch, self.groups[1]),
+                self.gameBatch,
+                self.groups[-1],
+                self.jData,
+                self.assets
             )
 
         self.bases = [

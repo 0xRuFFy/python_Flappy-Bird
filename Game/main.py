@@ -20,7 +20,7 @@ if __name__ == "__main__":
         elif sys.argv[1] == "--play" or sys.argv[1] == "-p":
             main("play")
         elif sys.argv[1] == "--learn" or sys.argv[1] == "-l":
-            main("learn", gen_size=50)
+            main("learn", gen_size=100)
     elif len(sys.argv) == 1:
         main("play")
     else:

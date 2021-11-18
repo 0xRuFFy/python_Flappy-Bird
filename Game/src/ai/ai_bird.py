@@ -6,7 +6,13 @@ from src.ai.ann import Ann
 
 
 class Ai_Bird(Bird):
-    def __init__(self, batch: Batch, group: OrderedGroup, assets: Assets, jData: JsonData) -> None:
+    def __init__(
+        self,
+        batch: Batch,
+        group: OrderedGroup,
+        assets: Assets,
+        jData: JsonData,
+    ) -> None:
         super().__init__(batch, group, assets, jData)
 
         self.ann: Ann = Ann(jData.ann_struct)
@@ -19,7 +25,7 @@ class Ai_Bird(Bird):
         self.ann.connections = self.ann.create_connections(ancestor=anc, copy=copy)
 
     def _update(self, dt: float = 0) -> None:
-        if self.ann.compute_output() == 0:
+        if self.ann.compute_output() == 1:
             self.flap()
 
         self.update(dt=dt)
