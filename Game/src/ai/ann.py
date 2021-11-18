@@ -53,7 +53,7 @@ class Ann:
     def set_input_layer(self, in_layer: List[float]) -> None:
         for i, node in enumerate(in_layer):
             self.layers[0][i] = node / 1000
-    
+
     def get_rand_weight(self, else_value: float = 0) -> float:
         if random() <= self.m_rate:
             return uniform(-1, 1)
