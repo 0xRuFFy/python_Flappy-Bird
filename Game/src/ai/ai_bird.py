@@ -38,12 +38,11 @@ class Ai_Bird(Bird):
         self.ann.set_input_layer(in_layer)
 
     def get_fitnes(self, pipe) -> None:
-        self.visible = False
         gap_dist = max(
             abs(pipe.upper.y - self.y - self.height),
             abs(self.y - pipe.lower.y - pipe.lower.height),
         )
-        self.fitnes = self.score + self.bonus - (gap_dist / 1000)
+        self.fitnes = (10 * self.score) + (self.bonus / 20) - (gap_dist / 900)
 
     def get_gens(self) -> List[List[float]]:
         return [[i for i in n] for n in self.ann.connections]

@@ -66,7 +66,8 @@ class Generation:
                     self.scoreBoard.update()
             else:
                 d_count += 1
-                bird.get_fitnes(pipe=self.get_next_pipe())
+                if bird.visible:
+                    bird.visible = False
 
         if d_count == len(self.birds):
             self.create_next_gen()
@@ -90,6 +91,7 @@ class Generation:
         best = -1
         best_id: int
         for i, bird in enumerate(self.birds):
+            bird.get_fitnes(pipe=self.get_next_pipe())
             if bird.fitnes > best:
                 best = bird.fitnes
                 best_id = i
