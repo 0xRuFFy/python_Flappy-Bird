@@ -22,6 +22,9 @@ class Ai_Bird(Bird):
 
     def _reset(self, anc: List[List[float]], copy: bool = False):
         self.reset()
+        self.fitnes = 0
+        self.score = 0
+        self.bonus = 0.0
         self.ann.connections = self.ann.create_connections(ancestor=anc, copy=copy)
 
     def _update(self, dt: float = 0) -> None:
