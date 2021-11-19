@@ -11,6 +11,10 @@ This is the Game Flappy Bird which was originally developt by **Dong Nguyen** un
 ### [assets](https://github.com/samuelcust/flappy-bird-assets)
 ### [code formater](https://github.com/psf/black)
 
+## TODO:
+- [] optimization of Fitnes functiom
+- [] fix the problem where the birds don't seem to learn anything sometimes
+
 ## How to use
 ### Print usage:
 ```shell
