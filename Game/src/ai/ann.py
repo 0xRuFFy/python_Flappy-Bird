@@ -5,7 +5,7 @@ from math import exp
 
 class Ann:
 
-    m_rate = 0.05
+    m_rate = 0.08
 
     def __init__(self, struct: List[int]) -> None:
         self.layers: List[List[float]] = [[0 for _ in range(i)] for i in struct]

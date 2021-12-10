@@ -38,7 +38,7 @@ class Ai_Bird(Bird):
         self.ann.set_input_layer(in_layer)
 
     def get_fitnes(self, pipe) -> None:
-        gap_dist = max(
+        gap_dist = min(
             abs(pipe.upper.y - self.y - self.height),
             abs(self.y - pipe.lower.y - pipe.lower.height),
         )
