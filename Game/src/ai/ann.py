@@ -18,7 +18,7 @@ class Ann:
         if init:
             return [
                 [
-                    self.get_rand_weight(mr=0.5)
+                    self.get_rand_weight(mr=0.75)
                     for _ in range((len(self.layers[i]) + 1) * len(layer))
                 ]
                 for i, layer in enumerate(self.layers[1:])

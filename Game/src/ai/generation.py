@@ -87,7 +87,7 @@ class Generation:
                 left = bird.x - next_pipe.lower.x - next_pipe.lower.width
                 bird.set_input_layer([top, bot, right, left])
 
-    def get_next_ancestor(self) -> List[float]:
+    def get_next_ancestor(self) -> Tuple[List[float], bool]:
         best = -1
         best_id: int
         for i, bird in enumerate(self.birds):
@@ -99,7 +99,7 @@ class Generation:
         if best == -1:
             raise IndexError("No Bird has a fitnes")
 
-        return self.birds[best_id].get_gens()
+        return (self.birds[best_id].get_gens(), self.birds[best_id].fitnes < -.1)
 
     def create_next_gen(self) -> None:
         self.gen += 1
@@ -110,10 +110,11 @@ class Generation:
         self.scoreBoard.score = 0
         self.scoreBoard.update()
         
-        anc = self.get_next_ancestor()
+        temp = self.get_next_ancestor()
+        anc = temp[0]
         self.birds[0]._reset(anc, copy=True)
         for bird in self.birds[1:]:
-            bird._reset(anc)
+            bird._reset(anc, reinit=temp[1])
             
         del self.pipes
         self.pipes: List[Pipe] = [
